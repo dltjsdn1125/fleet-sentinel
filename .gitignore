@@ -1,0 +1,36 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# next
+/.next/
+/out/
+
+# env (비밀값 — 커밋 금지)
+.env
+.env*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# prisma
+*.db
+*.db-journal
+
+# debug / os
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# vercel
+.vercel
+
+# ide
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# typescript
+next-env.d.ts
+*.tsbuildinfo

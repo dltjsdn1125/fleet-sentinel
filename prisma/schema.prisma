@@ -1,0 +1,311 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Supabase Postgres — 앱 데이터는 public과 분리된 스키마 (기존 Supabase 테이블과 충돌 방지)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["fleetsentinel"]
+}
+
+// ─── 구독 플랜 ────────────────────────────────────────────────────────────────
+model Plan {
+  id              String   @id @default(cuid())
+  name            String // STARTER | BUSINESS | ENTERPRISE
+  displayName     String
+  priceMonthlyKrw Int // 월 요금 (원)
+  priceYearlyKrw  Int // 연 요금 (원, 20% 할인)
+  maxVehicles     Int // 최대 차량 수 (-1 = 무제한)
+  stripePriceId   String? // Stripe Price ID (월)
+  stripePriceIdY  String? // Stripe Price ID (연)
+  features        String // JSON array
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  companies Company[]
+
+  @@schema("fleetsentinel")
+}
+
+// ─── 회사 ─────────────────────────────────────────────────────────────────────
+model Company {
+  id                 String    @id @default(cuid())
+  name               String
+  bizNumber          String?   @unique
+  subscriptionStatus String    @default("TRIAL") // TRIAL | ACTIVE | PAST_DUE | CANCELED
+  trialEndsAt        DateTime?
+  stripeCustomerId   String?   @unique
+  stripeSubId        String?   @unique
+  billingCycle       String    @default("MONTHLY") // MONTHLY | YEARLY
+  currentPeriodEnd   DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  planId String?
+  plan   Plan?   @relation(fields: [planId], references: [id])
+
+  users    User[]
+  vehicles Vehicle[]
+  invoices Invoice[]
+  expenses Expense[]
+  reports  Report[]
+
+  @@schema("fleetsentinel")
+}
+
+// ─── 청구서 ───────────────────────────────────────────────────────────────────
+model Invoice {
+  id                String    @id @default(cuid())
+  stripeInvoiceId   String    @unique
+  amountKrw         Int
+  status            String // paid | open | void
+  paidAt            DateTime?
+  periodStart       DateTime
+  periodEnd         DateTime
+  createdAt         DateTime  @default(now())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+  @@schema("fleetsentinel")
+}
+
+// ─── 사용자 ───────────────────────────────────────────────────────────────────
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String? // 소셜 로그인 시 null
+  name      String
+  phone     String?
+  role      String   @default("EMPLOYEE") // SUPER_ADMIN | ADMIN | EMPLOYEE
+  isActive  Boolean  @default(true)
+  image     String? // 프로필 이미지 URL
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  accounts Account[]
+  sessions Session[]
+
+  assignedVehicle Vehicle? @relation("AssignedDriver")
+
+  trips     Trip[]
+  auditLogs AuditLog[]
+  expenses  Expense[] @relation("ExpenseDriver")
+  reports   Report[]  @relation("ReportDriver")
+
+  @@index([companyId])
+  @@schema("fleetsentinel")
+}
+
+// NextAuth OAuth 계정 연결
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String // google | kakao | naver
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@schema("fleetsentinel")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@schema("fleetsentinel")
+}
+
+// ─── 차량 ─────────────────────────────────────────────────────────────────────
+model Vehicle {
+  id           String   @id @default(cuid())
+  licensePlate String   @unique
+  make         String
+  model        String
+  year         Int
+  type         String   @default("SEDAN")
+  fuelType     String   @default("GASOLINE")
+  odometer     Int      @default(0)
+  isShared     Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  assignedDriverId String? @unique
+  assignedDriver   User?   @relation("AssignedDriver", fields: [assignedDriverId], references: [id])
+
+  trips    Trip[]
+  expenses Expense[]
+
+  @@index([companyId])
+  @@schema("fleetsentinel")
+}
+
+// ─── 운행 기록 ────────────────────────────────────────────────────────────────
+model Trip {
+  id            String    @id @default(cuid())
+  date          DateTime
+  startTime     DateTime
+  endTime       DateTime?
+  startAddress  String
+  endAddress    String?
+  startLat      Float?
+  startLng      Float?
+  endLat        Float?
+  endLng        Float?
+  distanceKm    Float     @default(0)
+  startOdometer Float?
+  endOdometer   Float?
+  purpose       String?
+  purposeCode   String?
+  passengers    String?
+  isManualEntry Boolean   @default(false)
+  isLocked      Boolean   @default(false)
+  status        String    @default("PENDING") // PENDING | COMPLETED | FLAGGED | APPROVED
+  flagReason    String?
+  createdAt     DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  driverId  String
+  driver    User    @relation(fields: [driverId], references: [id])
+  vehicleId String
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+
+  gpsPoints GpsPoint[]
+
+  @@index([driverId])
+  @@index([vehicleId])
+  @@index([date])
+  @@index([status])
+  @@schema("fleetsentinel")
+}
+
+// ─── GPS 좌표 ─────────────────────────────────────────────────────────────────
+model GpsPoint {
+  id        String   @id @default(cuid())
+  lat       Float
+  lng       Float
+  accuracy  Float
+  speed     Float?
+  heading   Float?
+  timestamp DateTime
+  createdAt DateTime @default(now())
+
+  tripId String
+  trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
+  @@schema("fleetsentinel")
+}
+
+// ─── 차량 경비 ────────────────────────────────────────────────────────────────
+model Expense {
+  id               String   @id @default(cuid())
+  date             DateTime
+  category         String
+  amount           Int
+  description      String?
+  vendor           String?
+  cardLast4        String?
+  receiptNote      String?
+  mileage          Int?
+  liters           Float?
+  pricePerL        Float?
+  receiptImagePath String?
+  isApproved       Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  vehicleId String
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+
+  driverId String
+  driver   User    @relation("ExpenseDriver", fields: [driverId], references: [id])
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@index([vehicleId])
+  @@index([driverId])
+  @@index([companyId])
+  @@index([date])
+  @@index([category])
+  @@schema("fleetsentinel")
+}
+
+// ─── 업무 보고서 ──────────────────────────────────────────────────────────────
+model Report {
+  id            String   @id @default(cuid())
+  type          String
+  periodStart   DateTime
+  periodEnd     DateTime
+  content       String?
+  status        String   @default("SUBMITTED")
+  totalTrips    Int      @default(0)
+  totalKm       Float    @default(0)
+  totalExpenses Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  driverId  String
+  driver    User    @relation("ReportDriver", fields: [driverId], references: [id])
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@index([driverId])
+  @@index([companyId])
+  @@index([type])
+  @@index([periodStart])
+  @@schema("fleetsentinel")
+}
+
+// ─── 감사 로그 ────────────────────────────────────────────────────────────────
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String
+  before    String?
+  after     String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@schema("fleetsentinel")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@id([identifier, token])
+  @@schema("fleetsentinel")
+}
