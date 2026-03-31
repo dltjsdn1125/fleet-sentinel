@@ -1,18 +1,23 @@
 "use client";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+/** App Router에서 router.push만 쓰면 세션 쿠키 직후 첫 RSC 요청에 세션이 없어 /login으로 되튕김되는 경우가 있음 */
+function safeInternalPath(raw: string | null, fallback: string) {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return fallback;
+  return raw;
+}
+
 export default function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+  const callbackUrl = safeInternalPath(searchParams.get("callbackUrl"), "/dashboard");
   const googleAuthEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "1";
 
   async function handleSubmit(e: React.FormEvent) {
@@ -20,12 +25,25 @@ export default function LoginForm() {
     setLoading(true);
     setError("");
 
-    const result = await signIn("credentials", { email, password, redirect: false });
-    if (result?.error) {
-      setError("이메일 또는 비밀번호가 올바르지 않습니다.");
+    try {
+      const result = await signIn("credentials", { email, password, redirect: false });
+
+      if (result?.ok) {
+        window.location.assign(callbackUrl);
+        return;
+      }
+
+      if (result?.error === "Configuration") {
+        setError("인증 설정 오류입니다. 서버에 AUTH_SECRET(또는 NEXTAUTH_SECRET)이 있는지 확인하세요.");
+      } else if ((result?.status ?? 0) >= 500) {
+        setError("서버 오류입니다. Postgres가 켜져 있고 .env의 FLEET_DATABASE_URL이 맞는지 확인한 뒤, npm run db:push 및 npm run db:seed를 실행하세요.");
+      } else {
+        setError("이메일 또는 비밀번호가 올바르지 않습니다.");
+      }
+    } catch {
+      setError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도하세요.");
+    } finally {
       setLoading(false);
-    } else {
-      router.push(callbackUrl);
     }
   }
 
@@ -52,7 +70,7 @@ export default function LoginForm() {
             <>
               <button
                 type="button"
-                onClick={() => signIn("google", { callbackUrl })}
+                onClick={() => signIn("google", { callbackUrl: callbackUrl })}
                 className="w-full flex items-center justify-center gap-3 border border-gray-200 rounded-lg py-3 font-semibold text-sm hover:bg-gray-50 transition-colors mb-6"
               >
                 <svg width="18" height="18" viewBox="0 0 18 18">

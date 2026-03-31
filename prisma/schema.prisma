@@ -5,7 +5,8 @@ generator client {
 // Supabase Postgres — 앱 데이터는 public과 분리된 스키마 (기존 Supabase 테이블과 충돌 방지)
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // 시스템에 DATABASE_URL=file:... 등이 있으면 .env를 덮어씀 → Prisma 전용 변수 사용
+  url      = env("FLEET_DATABASE_URL")
   schemas  = ["fleetsentinel"]
 }
 

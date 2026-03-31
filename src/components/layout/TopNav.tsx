@@ -2,6 +2,7 @@
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTripTrackingOptional } from "@/hooks/useGpsTracker";
 
 const TAB_ITEMS = [
   { href: "/dashboard", label: "Fleet Overview" },
@@ -12,10 +13,24 @@ const TAB_ITEMS = [
 export function TopNav() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const trip = useTripTrackingOptional();
+  const tracking = trip?.stage === "tracking";
 
   return (
-    <header className="fixed top-0 right-0 left-64 h-16 bg-white z-40 border-b border-gray-200 flex justify-between items-center px-10 font-[Manrope] text-sm">
-      <div className="flex items-center gap-10">
+    <header className="fixed top-0 right-0 left-56 md:left-64 h-16 bg-white z-40 border-b border-gray-200 flex justify-between items-center px-4 md:px-10 font-[Manrope] text-sm">
+      <div className="flex items-center gap-4 md:gap-10 min-w-0 flex-1">
+        {tracking && (
+          <Link
+            href="/logs/track"
+            className="shrink-0 inline-flex items-center gap-2 rounded-lg border border-[#CAFF33] bg-[#CAFF33]/15 px-2.5 py-1.5 text-xs font-bold text-[#0a0a0a] hover:bg-[#CAFF33]/25"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0a0a0a] opacity-40" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#0a0a0a]" />
+            </span>
+            GPS 추적 중
+          </Link>
+        )}
         {/* 검색 */}
         <div className="relative flex items-center">
           <span className="material-symbols-outlined absolute left-3 text-gray-400 text-lg">search</span>

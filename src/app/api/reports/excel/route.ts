@@ -3,6 +3,23 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import ExcelJS from "exceljs";
 
+const PURPOSE_LABEL: Record<string, string> = {
+  CLIENT_VISIT: "고객사 방문",
+  DELIVERY: "납품·배송",
+  MEETING: "회의",
+  COMMUTE: "출퇴근",
+  MAINTENANCE: "차량 정비",
+  PRIVATE: "사적 운행",
+  OTHER: "기타",
+};
+
+function formatPurpose(purpose: string | null, purposeCode: string | null): string {
+  const label =
+    purposeCode && PURPOSE_LABEL[purposeCode] ? PURPOSE_LABEL[purposeCode] : purposeCode ?? "";
+  if (purpose?.trim()) return label ? `${label} (${purpose})` : purpose;
+  return label || "-";
+}
+
 export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -14,19 +31,27 @@ export async function GET(req: NextRequest) {
   const driverId = searchParams.get("driverId");
 
   const isAdmin = session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
+  const companyId = session.user.companyId ?? "";
 
   const where: Record<string, unknown> = {};
   if (!isAdmin) {
     where.driverId = session.user.id;
-  } else {
-    where.driver = { companyId: session.user.companyId };
+  } else if (companyId) {
+    where.driver = { companyId };
     if (driverId) where.driverId = driverId;
+  } else {
+    // 관리자인데 회사 미배정: 타 회사 데이터 노출 방지
+    where.driverId = session.user.id;
   }
   if (vehicleId) where.vehicleId = vehicleId;
   if (from || to) {
     where.date = {} as Record<string, Date>;
     if (from) (where.date as Record<string, Date>).gte = new Date(from);
-    if (to) (where.date as Record<string, Date>).lte = new Date(to);
+    if (to) {
+      const toDate = new Date(to);
+      toDate.setHours(23, 59, 59, 999);
+      (where.date as Record<string, Date>).lte = toDate;
+    }
   }
   where.status = { in: ["COMPLETED", "APPROVED"] };
 
@@ -47,20 +72,6 @@ export async function GET(req: NextRequest) {
   const ws = workbook.addWorksheet("업무용차량 운행일지", {
     pageSetup: { paperSize: 9, orientation: "landscape" },
   });
-
-  // 헤더 스타일
-  const headerStyle: Partial<ExcelJS.Style> = {
-    font: { bold: true, size: 10 },
-    fill: { type: "pattern", pattern: "solid", fgColor: { argb: "FF000000" } },
-    font2: { bold: true, size: 10, color: { argb: "FFFFFFFF" } },
-    alignment: { horizontal: "center", vertical: "middle" },
-    border: {
-      top: { style: "thin" },
-      bottom: { style: "thin" },
-      left: { style: "thin" },
-      right: { style: "thin" },
-    },
-  } as unknown as Partial<ExcelJS.Style>;
 
   // 제목
   ws.mergeCells("A1:K1");
@@ -121,8 +132,8 @@ export async function GET(req: NextRequest) {
       endTime: trip.endTime
         ? new Date(trip.endTime).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })
         : "-",
-      dist: trip.distanceKm,
-      purpose: trip.purpose ?? "-",
+      dist: Number(trip.distanceKm ?? 0),
+      purpose: formatPurpose(trip.purpose, trip.purposeCode),
       note: trip.isManualEntry ? "(수동입력)" : "",
     });
 
@@ -137,13 +148,20 @@ export async function GET(req: NextRequest) {
     row.getCell(9).alignment = { horizontal: "right", vertical: "middle" };
   });
 
-  // 합계 행
-  const totalRow = ws.addRow({ dist: trips.reduce((s, t) => s + t.distanceKm, 0) });
-  const sumCell = totalRow.getCell(1);
-  sumCell.value = `합계: ${trips.length}건`;
-  ws.mergeCells(`A${ws.rowCount}:H${ws.rowCount}`);
-  totalRow.getCell(9).font = { bold: true };
-  totalRow.getCell(9).alignment = { horizontal: "right" };
+  // 합계 행 (거리는 I열 = 9번째)
+  const totalKm = trips.reduce((s, t) => s + Number(t.distanceKm ?? 0), 0);
+  const sumRow = ws.addRow([]);
+  const sumRowNum = sumRow.number;
+  ws.mergeCells(`A${sumRowNum}:H${sumRowNum}`);
+  const labelCell = ws.getCell(`A${sumRowNum}`);
+  labelCell.value = `합계: ${trips.length}건`;
+  labelCell.font = { bold: true };
+  labelCell.alignment = { horizontal: "left", vertical: "middle" };
+  const distCell = ws.getCell(`I${sumRowNum}`);
+  distCell.value = totalKm;
+  distCell.font = { bold: true };
+  distCell.alignment = { horizontal: "right", vertical: "middle" };
+  distCell.numFmt = "0.0";
 
   // 버퍼로 내보내기
   const buffer = await workbook.xlsx.writeBuffer();

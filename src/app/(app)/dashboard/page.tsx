@@ -64,12 +64,21 @@ const STATUS_LABEL: Record<string, { label: string; className: string }> = {
   APPROVED:  { label: "승인",   className: "bg-[#CAFF33] text-[#0a0a0a] border border-[#CAFF33]" },
 };
 
+function ymd(d: Date) {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
 export default async function DashboardPage() {
   const session = await auth();
   if (!session) return null;
 
   const isAdmin = session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
   const data = await getDashboardData(session.user.companyId ?? "", session.user.id, isAdmin);
+
+  const today = new Date();
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const excelExportHref = `/api/reports/excel?from=${encodeURIComponent(ymd(monthStart))}&to=${encodeURIComponent(ymd(today))}`;
 
   // 틱커에 반복 표시할 아이템
   const tickerItems = [
@@ -124,7 +133,7 @@ export default async function DashboardPage() {
         </div>
         <div className="flex gap-4">
           <Link
-            href="/api/reports/excel"
+            href={excelExportHref}
             className="px-6 py-3 bg-white text-black border border-gray-200 rounded-lg font-bold flex items-center gap-2 hover:bg-gray-50 transition-colors"
           >
             <span className="material-symbols-outlined text-lg">download</span>

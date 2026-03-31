@@ -1,7 +1,68 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { PLANS } from "@/lib/plans";
+
+/** 랜딩 기능 그리드 — Unsplash (상업 이용 라이선스 사진) */
+const FEATURE_PHOTO_CARDS = [
+  {
+    title: "GPS 자동 추적",
+    desc: "정확도 50m 이내. Kalman Filter로 오차 제거.",
+    image:
+      "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=800&q=80",
+    alt: "스마트폰 내비게이션으로 도로 위치를 확인하는 모습",
+  },
+  {
+    title: "국세청 양식 생성",
+    desc: "운행일지 엑셀을 클릭 한 번에 즉시 다운로드.",
+    image:
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
+    alt: "노트북 화면의 데이터·보고서 작업",
+  },
+  {
+    title: "AI 목적 추천",
+    desc: "반복 패턴 학습으로 운행 목적 자동 제안.",
+    image:
+      "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=800&q=80",
+    alt: "인공지능·데이터 시각화를 연상시키는 추상 이미지",
+  },
+  {
+    title: "이상 운행 감지",
+    desc: "새벽·장거리·목적 미입력 자동 플래그.",
+    image:
+      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    alt: "야간 도로를 달리는 차량 전조등",
+  },
+  {
+    title: "직원·차량 관리",
+    desc: "관리자/직원 권한 분리. 공용/전용 차량 구분.",
+    image:
+      "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=800&q=80",
+    alt: "도로 위 다수의 차량·교통 흐름",
+  },
+  {
+    title: "전자서명 잠금",
+    desc: "월말 운행일지를 전자서명으로 확정 후 잠금.",
+    image:
+      "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80",
+    alt: "법률·계약 서류와 서명 도구",
+  },
+  {
+    title: "수동입력 보완",
+    desc: "GPS 음영지역 운행도 수동으로 기록 가능.",
+    image:
+      "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=800&q=80",
+    alt: "서류와 노트북으로 운행 내역을 정리하는 책상",
+  },
+  {
+    title: "세무사 연동",
+    desc: "엑셀·PDF 바로 공유. 세무대리인과 즉시 협업.",
+    image:
+      "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80",
+    alt: "비즈니스 미팅에서 협업하는 팀",
+  },
+] as const;
 
 /* ── 자동 스크롤 로고 트랙 ── */
 function LogoTrack({ items, reverse = false }: { items: string[]; reverse?: boolean }) {
@@ -97,18 +158,24 @@ export default function LandingPage() {
         <section className="min-h-[88vh] flex flex-col items-center justify-center px-4 py-20 text-center bg-white">
           <div className="max-w-5xl mx-auto">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-gray-50 border border-gray-100 rounded-full text-xs font-semibold text-gray-500 mb-8">
-              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-lime"></span>
               GPS 실시간 추적 · 국세청 준수
             </span>
 
-            <h1 className="font-black text-[clamp(2.8rem,8vw,5.5rem)] leading-[1.05] tracking-tight mb-6 text-[#0a0a0a]">
-              법인차량 운행일지,<br />
-              <span className="italic">GPS가 다 합니다.</span>
+            <h1 className="mb-6 text-[#0a0a0a]">
+              <span className="block font-black text-[clamp(2.4rem,7vw,4.75rem)] leading-[1.08] tracking-tight">
+                법인 차량 운행일지
+              </span>
+              <span className="mt-3 block text-[clamp(1.15rem,2.8vw,1.875rem)] font-bold leading-snug tracking-tight text-gray-600">
+                GPS 로그 기반 자동 기록 · 집계 ·{" "}
+                <span className="text-[#0a0a0a]">국세청 서식 출력</span>
+              </span>
             </h1>
 
-            <p className="text-gray-500 text-lg md:text-xl font-medium max-w-2xl mx-auto mb-10 leading-relaxed">
-              출발부터 도착까지 자동 기록. 국세청 양식 엑셀 즉시 생성.<br className="hidden md:block" />
-              수동 작성 시간 99% 절감을 지금 경험하세요.
+            <p className="mx-auto mb-10 max-w-2xl text-lg font-medium leading-relaxed text-gray-500 md:text-xl">
+              운행 구간은 브라우저 GPS로 남기고, 월말에는 법인세 시행규칙 별지 서식에 맞춘 엑셀을 바로 받으세요.
+              <br className="hidden md:block" />
+              입력·정리 시간을 줄이고 감사·세무 대응에 집중할 수 있습니다.
             </p>
 
             {/* 이메일 입력 CTA */}
@@ -135,16 +202,16 @@ export default function LandingPage() {
               <div className="bg-[#0a0a0a] rounded-2xl overflow-hidden shadow-2xl border border-gray-800">
                 {/* 상단 바 */}
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-800">
-                  <div className="w-3 h-3 rounded-full bg-red-500/60"></div>
-                  <div className="w-3 h-3 rounded-full bg-yellow-500/60"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-500/60"></div>
+                  <div className="h-3 w-3 rounded-full bg-gray-600"></div>
+                  <div className="h-3 w-3 rounded-full bg-gray-500"></div>
+                  <div className="h-3 w-3 rounded-full bg-lime/80"></div>
                   <span className="mx-auto text-xs text-gray-500">fleet-sentinel · 대시보드</span>
                 </div>
                 <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
                     { label: "총 차량", value: "35대", color: "text-white" },
                     { label: "오늘 운행", value: "12건", color: "text-lime" },
-                    { label: "목적 미입력", value: "3건", color: "text-red-400" },
+                    { label: "목적 미입력", value: "3건", color: "text-lime" },
                     { label: "이번달 거리", value: "1,240km", color: "text-white" },
                   ].map((c) => (
                     <div key={c.label} className="bg-white/5 rounded-xl p-4">
@@ -176,7 +243,13 @@ export default function LandingPage() {
                       <span className="text-xs text-gray-500 font-mono w-10">{trip.time}</span>
                       <span className="text-xs text-gray-300 flex-1">{trip.from} → {trip.to}</span>
                       <span className="text-xs text-gray-400">{trip.km}</span>
-                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${trip.status === "완료" ? "bg-lime/20 text-lime" : "bg-yellow-500/20 text-yellow-400"}`}>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
+                          trip.status === "완료"
+                            ? "bg-lime/20 text-lime"
+                            : "bg-gray-600/40 text-gray-200"
+                        }`}
+                      >
                         {trip.status}
                       </span>
                     </div>
@@ -200,8 +273,8 @@ export default function LandingPage() {
                 <p className="text-[9px] text-gray-400 uppercase tracking-widest mb-2">이상 감지</p>
                 <p className="text-sm font-bold text-[#0a0a0a]">새벽 운행 감지</p>
                 <p className="text-xs text-gray-500 mt-0.5">AM 3:14 · 420km</p>
-                <div className="mt-3 h-1.5 bg-red-100 rounded-full overflow-hidden">
-                  <div className="h-full w-2/3 bg-red-400 rounded-full"></div>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-gray-200">
+                  <div className="h-full w-2/3 rounded-full bg-lime"></div>
                 </div>
               </div>
             </div>
@@ -209,18 +282,20 @@ export default function LandingPage() {
         </section>
 
         {/* ── 회사 로고 스크롤 ── */}
-        <section className="py-10 border-y border-gray-100 overflow-hidden">
-          <p className="text-center text-xs font-semibold text-gray-400 uppercase tracking-widest mb-6">
-            국내 주요 법인이 사용 중인 FleetSentinel
-          </p>
-          <LogoTrack items={companies} />
-          <div className="mt-4">
-            <LogoTrack items={[...companies].reverse()} reverse />
+        <section className="py-10 border-y border-gray-100 overflow-hidden px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20">
+          <div className="mx-auto w-[70%] max-w-full min-w-0">
+            <p className="text-center text-xs font-semibold text-gray-400 uppercase tracking-widest mb-6">
+              국내 주요 법인이 사용 중인 FleetSentinel
+            </p>
+            <LogoTrack items={companies} />
+            <div className="mt-4">
+              <LogoTrack items={[...companies].reverse()} reverse />
+            </div>
           </div>
         </section>
 
         {/* ── 기능 그리드 ── */}
-        <section id="features" className="py-24 md:py-32 px-4 md:px-8">
+        <section id="features" className="py-24 md:py-32 px-4 sm:px-6 md:px-10 lg:px-16">
           <div className="max-w-6xl mx-auto">
             <div className="mb-16 md:mb-20">
               <h2 className="font-black text-[clamp(2rem,5vw,3.5rem)] leading-tight tracking-tight mb-4">
@@ -228,24 +303,32 @@ export default function LandingPage() {
               </h2>
               <p className="text-gray-500 text-lg max-w-xl">세무 리스크를 없애는 GPS 자동화부터 국세청 보고서까지 한 번에.</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { icon: "location_on", title: "GPS 자동 추적", desc: "정확도 50m 이내. Kalman Filter로 오차 제거.", color: "bg-lime/20" },
-                { icon: "history_edu", title: "국세청 양식 생성", desc: "운행일지 엑셀을 클릭 한 번에 즉시 다운로드.", color: "bg-blue-50" },
-                { icon: "psychology", title: "AI 목적 추천", desc: "반복 패턴 학습으로 운행 목적 자동 제안.", color: "bg-purple-50" },
-                { icon: "warning", title: "이상 운행 감지", desc: "새벽·장거리·목적 미입력 자동 플래그.", color: "bg-red-50" },
-                { icon: "group_add", title: "직원·차량 관리", desc: "관리자/직원 권한 분리. 공용/전용 차량 구분.", color: "bg-orange-50" },
-                { icon: "lock", title: "전자서명 잠금", desc: "월말 운행일지를 전자서명으로 확정 후 잠금.", color: "bg-gray-50" },
-                { icon: "edit_note", title: "수동입력 보완", desc: "GPS 음영지역 운행도 수동으로 기록 가능.", color: "bg-teal-50" },
-                { icon: "receipt_long", title: "세무사 연동", desc: "엑셀·PDF 바로 공유. 세무대리인과 즉시 협업.", color: "bg-pink-50" },
-              ].map((f) => (
-                <div key={f.title} className="group p-6 rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all cursor-default">
-                  <div className={`w-10 h-10 rounded-xl ${f.color} flex items-center justify-center mb-4`}>
-                    <span className="material-symbols-outlined text-[#0a0a0a]" style={{ fontSize: "20px" }}>{f.icon}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
+              {FEATURE_PHOTO_CARDS.map((f) => (
+                <article
+                  key={f.title}
+                  className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:border-gray-200 hover:shadow-lg"
+                >
+                  <div className="relative aspect-[5/3] w-full overflow-hidden bg-gray-100">
+                    <Image
+                      src={f.image}
+                      alt={f.alt}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                    />
+                    <div
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent"
+                      aria-hidden
+                    />
+                    <h3 className="absolute bottom-3 left-3 right-3 text-base font-bold leading-snug text-white drop-shadow-sm">
+                      {f.title}
+                    </h3>
                   </div>
-                  <h3 className="font-bold text-base mb-1.5">{f.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
-                </div>
+                  <div className="flex flex-1 flex-col p-5 pt-4">
+                    <p className="text-sm leading-relaxed text-gray-500">{f.desc}</p>
+                  </div>
+                </article>
               ))}
             </div>
           </div>
@@ -301,7 +384,7 @@ export default function LandingPage() {
                     <div className="flex-1">
                       <span className="text-xs font-mono text-gray-300">{point.lat}, {point.lng}</span>
                     </div>
-                    <span className="text-[10px] text-green-400">{point.acc}</span>
+                    <span className="text-[10px] text-lime">{point.acc}</span>
                     <span className="text-[10px] text-gray-500">{point.speed}</span>
                   </div>
                 ))}
@@ -320,9 +403,9 @@ export default function LandingPage() {
             {/* 엑셀 미리보기 */}
             <div className="bg-gray-50 rounded-2xl border border-gray-100 p-6 overflow-hidden">
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                <div className="bg-[#1D6F42] px-4 py-3 flex items-center gap-2">
-                  <span className="text-white text-xs font-bold">업무용 차량 운행일지.xlsx</span>
-                  <span className="ml-auto text-white/60 text-[10px]">국세청 법인세법 시행규칙 별지 제66호</span>
+                <div className="flex items-center gap-2 bg-[#0a0a0a] px-4 py-3">
+                  <span className="text-xs font-bold text-lime">업무용 차량 운행일지.xlsx</span>
+                  <span className="ml-auto text-[10px] text-gray-400">국세청 법인세법 시행규칙 별지 제66호</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-[9px]">
@@ -346,9 +429,11 @@ export default function LandingPage() {
                           ))}
                         </tr>
                       ))}
-                      <tr className="bg-[#1D6F42]/10 font-bold">
-                        <td colSpan={5} className="px-2 py-2 text-xs text-gray-700">합계</td>
-                        <td className="px-2 py-2 text-xs text-[#1D6F42]">87.9</td>
+                      <tr className="bg-lime/10 font-bold">
+                        <td colSpan={5} className="px-2 py-2 text-xs text-gray-800">
+                          합계
+                        </td>
+                        <td className="px-2 py-2 text-xs text-[#0a0a0a]">87.9</td>
                         <td></td>
                       </tr>
                     </tbody>
@@ -357,7 +442,10 @@ export default function LandingPage() {
               </div>
               <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
                 <span>총 47건 운행 기록</span>
-                <button className="flex items-center gap-1.5 bg-[#1D6F42] text-white px-3 py-1.5 rounded-lg font-semibold hover:bg-[#1D6F42]/90 transition-colors">
+                <button
+                  type="button"
+                  className="flex items-center gap-1.5 rounded-lg bg-lime px-3 py-1.5 font-semibold text-[#0a0a0a] transition-colors hover:bg-lime-dark"
+                >
                   <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>download</span>
                   엑셀 다운로드
                 </button>
@@ -392,14 +480,14 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ── 기능 배너 3: 이상 감지 ── */}
+        {/* ── 기능 배너 3: 이상 감지 (검정·회색·라임만) ── */}
         <section className="py-20 md:py-28 bg-gray-50 px-4 md:px-8">
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <span className="inline-block text-xs font-bold text-red-500 uppercase tracking-widest mb-6 border border-red-200 px-3 py-1 rounded-full bg-red-50">
+              <span className="inline-block text-xs font-bold text-[#0a0a0a] uppercase tracking-widest mb-6 border border-lime/40 px-3 py-1 rounded-full bg-lime/15">
                 자동 이상 감지
               </span>
-              <h2 className="font-black text-[clamp(2rem,4vw,3.2rem)] leading-tight mb-6">
+              <h2 className="font-black text-[clamp(2rem,4vw,3.2rem)] leading-tight mb-6 text-[#0a0a0a]">
                 리스크, 자동 감지
               </h2>
               <p className="text-gray-500 text-base leading-relaxed mb-8">
@@ -412,59 +500,90 @@ export default function LandingPage() {
                   { label: "24시간 내 목적 미기재", severity: "medium" },
                   { label: "동일 목적지 반복 이상 패턴", severity: "low" },
                 ].map((alert) => (
-                  <div key={alert.label} className={`flex items-center gap-3 p-3 rounded-xl border ${
-                    alert.severity === "high" ? "bg-red-50 border-red-100" :
-                    alert.severity === "medium" ? "bg-yellow-50 border-yellow-100" :
-                    "bg-gray-100 border-gray-200"
-                  }`}>
-                    <div className={`w-2 h-2 rounded-full shrink-0 ${
-                      alert.severity === "high" ? "bg-red-500" :
-                      alert.severity === "medium" ? "bg-yellow-500" :
-                      "bg-gray-400"
-                    }`}></div>
-                    <span className="text-sm text-gray-700">{alert.label}</span>
-                    <span className={`ml-auto text-[10px] font-bold uppercase ${
-                      alert.severity === "high" ? "text-red-500" :
-                      alert.severity === "medium" ? "text-yellow-600" :
-                      "text-gray-400"
-                    }`}>
+                  <div
+                    key={alert.label}
+                    className={`flex items-center gap-3 p-3 rounded-xl border ${
+                      alert.severity === "high"
+                        ? "bg-lime/10 border-lime/30"
+                        : alert.severity === "medium"
+                          ? "bg-gray-200/70 border-gray-300"
+                          : "bg-gray-100 border-gray-200"
+                    }`}
+                  >
+                    <div
+                      className={`h-2 w-2 shrink-0 rounded-full ${
+                        alert.severity === "high"
+                          ? "bg-lime"
+                          : alert.severity === "medium"
+                            ? "bg-gray-500"
+                            : "bg-gray-400"
+                      }`}
+                    />
+                    <span className="text-sm text-gray-800">{alert.label}</span>
+                    <span
+                      className={`ml-auto text-[10px] font-bold uppercase ${
+                        alert.severity === "high"
+                          ? "text-[#0a0a0a]"
+                          : alert.severity === "medium"
+                            ? "text-gray-600"
+                            : "text-gray-400"
+                      }`}
+                    >
                       {alert.severity === "high" ? "위험" : alert.severity === "medium" ? "주의" : "낮음"}
                     </span>
                   </div>
                 ))}
               </div>
-              <Link href="/register" className="inline-flex items-center gap-2 bg-[#0a0a0a] text-white font-bold text-sm px-6 py-3 rounded-full hover:bg-gray-800 transition-colors">
+              <Link
+                href="/register"
+                className="inline-flex items-center gap-2 rounded-full bg-[#0a0a0a] px-6 py-3 text-sm font-bold text-lime transition-colors hover:bg-gray-800"
+              >
                 무료로 시작하기
               </Link>
             </div>
             {/* 이상 감지 카드 */}
             <div className="space-y-4">
-              <div className="bg-white rounded-2xl border border-red-100 p-5 shadow-sm">
-                <div className="flex items-start justify-between mb-3">
+              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm ring-1 ring-lime/20">
+                <div className="mb-3 flex items-start justify-between">
                   <div>
-                    <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest">⚠ 이상 감지</p>
-                    <p className="font-bold text-sm mt-1">새벽 운행 감지됨</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-lime">이상 감지</p>
+                    <p className="mt-1 text-sm font-bold text-[#0a0a0a]">새벽 운행 감지됨</p>
                   </div>
-                  <span className="text-[10px] text-gray-400 bg-gray-50 px-2 py-1 rounded-full">2026-03-15</span>
+                  <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] text-gray-500">2026-03-15</span>
                 </div>
                 <p className="text-xs text-gray-500">AM 3:14 출발 · 420km · 목적: 미입력</p>
-                <p className="text-xs text-gray-500 mt-1">차량: 12가3456 · 운전자: 박민수</p>
+                <p className="mt-1 text-xs text-gray-500">차량: 12가3456 · 운전자: 박민수</p>
                 <div className="mt-4 flex gap-2">
-                  <button className="flex-1 text-xs font-semibold py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors">검토 요청</button>
-                  <button className="flex-1 text-xs font-semibold py-2 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors">목적 입력</button>
+                  <button
+                    type="button"
+                    className="flex-1 rounded-lg bg-lime py-2 text-xs font-semibold text-[#0a0a0a] transition-colors hover:bg-lime-dark"
+                  >
+                    검토 요청
+                  </button>
+                  <button
+                    type="button"
+                    className="flex-1 rounded-lg border border-gray-200 bg-gray-50 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100"
+                  >
+                    목적 입력
+                  </button>
                 </div>
               </div>
-              <div className="bg-white rounded-2xl border border-yellow-100 p-5 shadow-sm">
-                <div className="flex items-start justify-between mb-3">
+              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                <div className="mb-3 flex items-start justify-between">
                   <div>
-                    <p className="text-[10px] font-bold text-yellow-600 uppercase tracking-widest">△ 주의</p>
-                    <p className="font-bold text-sm mt-1">목적 미입력 3건</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">주의</p>
+                    <p className="mt-1 text-sm font-bold text-[#0a0a0a]">목적 미입력 3건</p>
                   </div>
-                  <span className="text-[10px] text-gray-400 bg-gray-50 px-2 py-1 rounded-full">24시간 경과</span>
+                  <span className="rounded-full bg-gray-100 px-2 py-1 text-[10px] text-gray-500">24시간 경과</span>
                 </div>
                 <p className="text-xs text-gray-500">국세청 제출 전 목적 입력이 필요합니다.</p>
                 <div className="mt-4">
-                  <button className="w-full text-xs font-semibold py-2 rounded-lg bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition-colors">일괄 입력하기</button>
+                  <button
+                    type="button"
+                    className="w-full rounded-lg border border-gray-300 bg-gray-900 py-2 text-xs font-semibold text-lime transition-colors hover:bg-gray-800"
+                  >
+                    일괄 입력하기
+                  </button>
                 </div>
               </div>
             </div>
@@ -594,7 +713,7 @@ export default function LandingPage() {
                 FleetSentinel
               </div>
               <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
-                GPS 기반 법인차량 운행일지 자동화.<br />국세청 업무용 차량 운행일지 서식 완전 지원.
+                법인 차량 운행일지 자동화와 국세청 업무용 차량 운행일지 서식 지원.
               </p>
             </div>
             {[
