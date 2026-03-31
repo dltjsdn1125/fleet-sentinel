@@ -4,39 +4,40 @@ import { prisma } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, password, companyName, bizNumber, plan } = await req.json();
+    const {
+      name, email, password, companyName,
+      bizNumber, bizDocUrl, ceoName, industry, plan,
+    } = await req.json();
 
     if (!name || !email || !password || !companyName) {
       return NextResponse.json({ error: "필수 항목을 모두 입력해주세요." }, { status: 400 });
     }
-
     if (password.length < 8) {
       return NextResponse.json({ error: "비밀번호는 8자 이상이어야 합니다." }, { status: 400 });
     }
 
-    // 이메일 중복 확인
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return NextResponse.json({ error: "이미 사용 중인 이메일입니다." }, { status: 400 });
     }
 
-    // 플랜 조회
     const planRecord = await prisma.plan.findFirst({
       where: { name: (plan ?? "STARTER").toUpperCase() },
     });
 
-    // 회사 생성
     const company = await prisma.company.create({
       data: {
         name: companyName,
         bizNumber: bizNumber || undefined,
+        bizDocUrl: bizDocUrl || undefined,
+        ceoName: ceoName || undefined,
+        industry: industry || undefined,
         subscriptionStatus: "TRIAL",
-        trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14일
+        trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
         planId: planRecord?.id,
       },
     });
 
-    // 관리자 계정 생성
     const hashed = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
       data: {

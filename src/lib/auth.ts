@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import Kakao from "next-auth/providers/kakao";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
@@ -7,15 +8,14 @@ import { prisma } from "@/lib/db";
 
 const googleId = process.env.GOOGLE_CLIENT_ID?.trim() ?? "";
 const googleSecret = process.env.GOOGLE_CLIENT_SECRET?.trim() ?? "";
-const hasGoogleOAuth = Boolean(googleId && googleSecret);
+const hasGoogle = Boolean(googleId && googleSecret);
 
-/** Auth.js v5: 로컬호스트·리버스 프록시에서 세션/콜백 URL 불일치 방지 */
+const kakaoId = process.env.KAKAO_CLIENT_ID?.trim() ?? "";
+const kakaoSecret = process.env.KAKAO_CLIENT_SECRET?.trim() ?? "";
+const hasKakao = Boolean(kakaoId && kakaoSecret);
+
 const trustHost = true;
 
-/**
- * AUTH_SECRET 또는 NEXTAUTH_SECRET 필수(배포).
- * 개발만 비어 있을 때 임시값으로 /api/auth/* 500(Configuration) 방지.
- */
 const authSecret =
   process.env.AUTH_SECRET?.trim() ||
   process.env.NEXTAUTH_SECRET?.trim() ||
@@ -33,13 +33,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/login",
   },
   providers: [
-    ...(hasGoogleOAuth
-      ? [
-          Google({
-            clientId: googleId,
-            clientSecret: googleSecret,
-          }),
-        ]
+    ...(hasGoogle
+      ? [Google({ clientId: googleId, clientSecret: googleSecret })]
+      : []),
+    ...(hasKakao
+      ? [Kakao({ clientId: kakaoId, clientSecret: kakaoSecret })]
       : []),
     Credentials({
       name: "credentials",
@@ -70,6 +68,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           role: user.role,
           companyId: user.companyId,
           image: user.image,
+          needsOnboarding: false,
         };
       },
     }),
@@ -78,18 +77,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as { role?: string }).role;
-        token.companyId = (user as { companyId?: string }).companyId;
+        token.role = (user as any).role;
+        token.companyId = (user as any).companyId;
+        token.needsOnboarding = (user as any).needsOnboarding ?? false;
       }
-      // 소셜 로그인 시 DB에서 role/companyId 조회
+      // 소셜 로그인 시 DB에서 최신 정보 조회
       if (account && account.provider !== "credentials") {
         const dbUser = await prisma.user.findUnique({
           where: { email: token.email! },
+          include: { company: true },
         });
         if (dbUser) {
           token.id = dbUser.id;
           token.role = dbUser.role;
           token.companyId = dbUser.companyId ?? undefined;
+          token.needsOnboarding = !dbUser.companyId;
         }
       }
       return token;
@@ -99,12 +101,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.user.companyId = token.companyId as string | undefined;
+        session.user.needsOnboarding = token.needsOnboarding as boolean;
       }
       return session;
     },
     async signIn({ user, account }) {
-      // 소셜 로그인 시 신규 사용자는 EMPLOYEE로 생성
-      if (account?.provider === "google" && user.email) {
+      // 소셜 신규 가입: companyId 없이 ADMIN으로 생성 → 온보딩에서 기업정보 입력
+      if (
+        (account?.provider === "google" || account?.provider === "kakao") &&
+        user.email
+      ) {
         const existing = await prisma.user.findUnique({
           where: { email: user.email },
         });
@@ -114,7 +120,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               email: user.email,
               name: user.name ?? "사용자",
               image: user.image,
-              role: "EMPLOYEE",
+              role: "ADMIN",
             },
           });
         }
@@ -124,7 +130,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 });
 
-// 타입 확장
 declare module "next-auth" {
   interface Session {
     user: {
@@ -134,6 +139,7 @@ declare module "next-auth" {
       image?: string;
       role: string;
       companyId?: string;
+      needsOnboarding?: boolean;
     };
   }
 }
