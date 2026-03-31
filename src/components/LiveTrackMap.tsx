@@ -97,11 +97,5 @@ export default function LiveTrackMap({ points, currentPoint, height = "100%" }: 
     mapInst.current.panTo(latlng, { animate: true, duration: 0.5 });
   }, [currentPoint]);
 
-  return (
-    <div
-      ref={mapRef}
-      className="min-h-0 min-w-0 z-0"
-      style={{ width: "100%", height }}
-    />
-  );
+  return <div ref={mapRef} className="absolute inset-0 z-0" />;
 }

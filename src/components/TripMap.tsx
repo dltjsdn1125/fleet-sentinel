@@ -219,5 +219,5 @@ export default function TripMap({
     };
   }, [gpsPoints, startLat, startLng, endLat, endLng, startAddress, endAddress]);
 
-  return <div ref={mapRef} className="min-h-0 min-w-0 z-0" style={{ height, width: "100%" }} />;
+  return <div ref={mapRef} className="absolute inset-0 z-0" />;
 }
