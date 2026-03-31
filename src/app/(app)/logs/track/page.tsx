@@ -217,10 +217,49 @@ export default function TrackPage() {
         </div>
       )}
 
+      {showMap && (
+        <div className="md:order-2 relative min-h-[min(56vh,30rem)] md:min-h-0 flex-1 min-w-0">
+          <div className="absolute inset-0 flex px-4 pt-4 pb-2 md:p-0">
+            <div className="relative flex-1 rounded-2xl md:rounded-none overflow-hidden">
+              <LiveTrackMap
+                points={livePoints}
+                currentPoint={currentPoint ? { lat: currentPoint.lat, lng: currentPoint.lng } : null}
+                height="100%"
+              />
+              {stage === "tracking" && (
+                <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2 pointer-events-none">
+                  <div className="bg-[#0a0a0a]/90 text-white rounded-xl px-4 py-2.5 md:px-5 md:py-3 flex items-center gap-3 shadow-lg">
+                    <span className="material-symbols-outlined text-[#CAFF33] text-lg">timer</span>
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">경과 시간</p>
+                      <p className="text-lg md:text-xl font-black font-mono">{fmt(elapsed)}</p>
+                    </div>
+                  </div>
+                  <div className="bg-[#0a0a0a]/90 text-white rounded-xl px-4 py-2.5 md:px-5 md:py-3 flex items-center gap-3 shadow-lg">
+                    <span className="material-symbols-outlined text-[#CAFF33] text-lg">straighten</span>
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">이동 거리</p>
+                      <p className="text-lg md:text-xl font-black">{totalDistanceKm.toFixed(2)} km</p>
+                    </div>
+                  </div>
+                  <div className="bg-[#0a0a0a]/90 text-white rounded-xl px-4 py-2.5 md:px-5 md:py-3 flex items-center gap-3 shadow-lg">
+                    <span className="material-symbols-outlined text-[#CAFF33] text-lg">speed</span>
+                    <div>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">현재 속도</p>
+                      <p className="text-lg md:text-xl font-black">{(currentPoint?.speed ?? 0).toFixed(0)} km/h</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div
-        className={`flex flex-col min-h-0 ${
+        className={`md:order-1 flex flex-col min-h-0 ${
           showMap
-            ? "w-full md:w-72 shrink-0 border-b md:border-b-0 md:border-r border-gray-200 overflow-y-auto max-h-[45vh] md:max-h-none"
+            ? "w-full md:w-72 shrink-0 border-t md:border-t-0 md:border-r border-gray-200 overflow-y-auto max-h-[44vh] md:max-h-none"
             : "w-full max-w-sm px-8 py-10"
         } bg-white`}
       >
@@ -320,40 +359,6 @@ export default function TrackPage() {
         </div>
       </div>
 
-      {showMap && (
-        <div className="relative min-h-[min(55vh,28rem)] md:min-h-0 flex-1 min-w-0 overflow-hidden">
-          <LiveTrackMap
-            points={livePoints}
-            currentPoint={currentPoint ? { lat: currentPoint.lat, lng: currentPoint.lng } : null}
-            height="100%"
-          />
-          {stage === "tracking" && (
-            <div className="absolute top-3 left-3 right-3 flex flex-wrap gap-2 pointer-events-none">
-              <div className="bg-[#0a0a0a]/90 text-white rounded-xl px-4 py-2.5 md:px-5 md:py-3 flex items-center gap-3 shadow-lg">
-                <span className="material-symbols-outlined text-[#CAFF33] text-lg">timer</span>
-                <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">경과 시간</p>
-                  <p className="text-lg md:text-xl font-black font-mono">{fmt(elapsed)}</p>
-                </div>
-              </div>
-              <div className="bg-[#0a0a0a]/90 text-white rounded-xl px-4 py-2.5 md:px-5 md:py-3 flex items-center gap-3 shadow-lg">
-                <span className="material-symbols-outlined text-[#CAFF33] text-lg">straighten</span>
-                <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">이동 거리</p>
-                  <p className="text-lg md:text-xl font-black">{totalDistanceKm.toFixed(2)} km</p>
-                </div>
-              </div>
-              <div className="bg-[#0a0a0a]/90 text-white rounded-xl px-4 py-2.5 md:px-5 md:py-3 flex items-center gap-3 shadow-lg">
-                <span className="material-symbols-outlined text-[#CAFF33] text-lg">speed</span>
-                <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">현재 속도</p>
-                  <p className="text-lg md:text-xl font-black">{(currentPoint?.speed ?? 0).toFixed(0)} km/h</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
