@@ -31,15 +31,21 @@ function AddressInput({
 }) {
   const [results, setResults] = useState<NominatimResult[]>([]);
   const [open, setOpen] = useState(false);
+  const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
+  // 외부 클릭 시 닫기 — 드롭다운 자체 클릭은 제외
   useEffect(() => {
-    function onClickOutside(e: MouseEvent) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    function onDown(e: MouseEvent) {
+      const t = e.target as Node;
+      if (wrapRef.current?.contains(t) || listRef.current?.contains(t)) return;
+      setOpen(false);
     }
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
   }, []);
 
   function handleChange(val: string) {
@@ -48,6 +54,11 @@ function AddressInput({
     if (val.trim().length < 2) { setResults([]); setOpen(false); return; }
     timer.current = setTimeout(async () => {
       try {
+        // 드롭다운 위치를 뷰포트 기준으로 계산 (overflow:hidden 부모 우회)
+        if (inputRef.current) {
+          const r = inputRef.current.getBoundingClientRect();
+          setRect({ top: r.bottom + 4, left: r.left, width: r.width });
+        }
         const res = await fetch(`/api/geocode?q=${encodeURIComponent(val)}`);
         const data: NominatimResult[] = await res.json();
         setResults(data);
@@ -64,17 +75,18 @@ function AddressInput({
   }
 
   return (
-    <div ref={wrapRef} className="relative">
+    <div ref={wrapRef}>
       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{label}</p>
       <div className="relative">
         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none">
           {icon ?? "search"}
         </span>
         <input
+          ref={inputRef}
           value={value}
           onChange={(e) => handleChange(e.target.value)}
           placeholder={placeholder ?? "장소명 또는 주소 입력"}
-          className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#CAFF33]"
+          className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-10 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#CAFF33]"
         />
         {value && (
           <button type="button" onClick={() => { onChange(""); setResults([]); setOpen(false); }}
@@ -83,11 +95,17 @@ function AddressInput({
           </button>
         )}
       </div>
-      {open && results.length > 0 && (
-        <ul className="absolute z-[60] w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden max-h-52 overflow-y-auto">
+
+      {/* position:fixed 로 렌더링 → 부모 overflow:hidden 에 클리핑되지 않음 */}
+      {open && results.length > 0 && rect && (
+        <ul
+          ref={listRef}
+          style={{ position: "fixed", top: rect.top, left: rect.left, width: rect.width, zIndex: 9999 }}
+          className="bg-white border border-gray-200 rounded-xl shadow-2xl max-h-56 overflow-y-auto"
+        >
           {results.map((r) => (
             <li key={r.place_id}>
-              <button type="button" onClick={() => select(r)}
+              <button type="button" onMouseDown={(e) => { e.preventDefault(); select(r); }}
                 className="w-full text-left px-4 py-2.5 hover:bg-gray-50 border-b border-gray-100 last:border-0">
                 <p className="text-sm font-bold text-[#0a0a0a] truncate">
                   {r.name || r.display_name.split(",")[0].trim()}
