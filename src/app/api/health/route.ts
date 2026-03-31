@@ -14,7 +14,7 @@ export async function GET() {
       {
         ok: false,
         database: "error",
-        message,
+        message: process.env.NODE_ENV === "development" ? message : "Database unavailable",
       },
       { status: 503 }
     );
