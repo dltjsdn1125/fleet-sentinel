@@ -1,8 +1,24 @@
-export { auth as middleware } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+
+// 경량 미들웨어 — NextAuth JWT 쿠키 존재 여부만 체크 (Prisma 미포함)
+export function middleware(req: NextRequest) {
+  const sessionCookie =
+    req.cookies.get("authjs.session-token") ??
+    req.cookies.get("__Secure-authjs.session-token") ??
+    req.cookies.get("next-auth.session-token") ??
+    req.cookies.get("__Secure-next-auth.session-token");
+
+  if (!sessionCookie) {
+    const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
-    // onboarding 체크가 필요한 앱 경로
     "/dashboard/:path*",
     "/logs/:path*",
     "/expenses/:path*",
