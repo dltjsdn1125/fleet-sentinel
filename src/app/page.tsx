@@ -1,68 +1,7 @@
 "use client";
-import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { PLANS } from "@/lib/plans";
-
-/** 랜딩 기능 그리드 — Unsplash (상업 이용 라이선스 사진) */
-const FEATURE_PHOTO_CARDS = [
-  {
-    title: "GPS 자동 추적",
-    desc: "정확도 50m 이내. Kalman Filter로 오차 제거.",
-    image:
-      "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=800&q=80",
-    alt: "스마트폰 내비게이션으로 도로 위치를 확인하는 모습",
-  },
-  {
-    title: "국세청 양식 생성",
-    desc: "운행일지 엑셀을 클릭 한 번에 즉시 다운로드.",
-    image:
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
-    alt: "노트북 화면의 데이터·보고서 작업",
-  },
-  {
-    title: "AI 목적 추천",
-    desc: "반복 패턴 학습으로 운행 목적 자동 제안.",
-    image:
-      "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=800&q=80",
-    alt: "인공지능·데이터 시각화를 연상시키는 추상 이미지",
-  },
-  {
-    title: "이상 운행 감지",
-    desc: "새벽·장거리·목적 미입력 자동 플래그.",
-    image:
-      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
-    alt: "야간 도로를 달리는 차량 전조등",
-  },
-  {
-    title: "직원·차량 관리",
-    desc: "관리자/직원 권한 분리. 공용/전용 차량 구분.",
-    image:
-      "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=800&q=80",
-    alt: "도로 위 다수의 차량·교통 흐름",
-  },
-  {
-    title: "전자서명 잠금",
-    desc: "월말 운행일지를 전자서명으로 확정 후 잠금.",
-    image:
-      "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=800&q=80",
-    alt: "법률·계약 서류와 서명 도구",
-  },
-  {
-    title: "수동입력 보완",
-    desc: "GPS 음영지역 운행도 수동으로 기록 가능.",
-    image:
-      "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=800&q=80",
-    alt: "서류와 노트북으로 운행 내역을 정리하는 책상",
-  },
-  {
-    title: "세무사 연동",
-    desc: "엑셀·PDF 바로 공유. 세무대리인과 즉시 협업.",
-    image:
-      "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80",
-    alt: "비즈니스 미팅에서 협업하는 팀",
-  },
-] as const;
 
 /* ── 자동 스크롤 로고 트랙 ── */
 function LogoTrack({ items, reverse = false }: { items: string[]; reverse?: boolean }) {
@@ -290,46 +229,6 @@ export default function LandingPage() {
             <LogoTrack items={companies} />
             <div className="mt-4">
               <LogoTrack items={[...companies].reverse()} reverse />
-            </div>
-          </div>
-        </section>
-
-        {/* ── 기능 그리드 ── */}
-        <section id="features" className="py-24 md:py-32 px-4 sm:px-6 md:px-10 lg:px-16">
-          <div className="max-w-6xl mx-auto">
-            <div className="mb-16 md:mb-20">
-              <h2 className="font-black text-[clamp(2rem,5vw,3.5rem)] leading-tight tracking-tight mb-4">
-                운행일지 관리에 필요한<br />모든 것.
-              </h2>
-              <p className="text-gray-500 text-lg max-w-xl">세무 리스크를 없애는 GPS 자동화부터 국세청 보고서까지 한 번에.</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
-              {FEATURE_PHOTO_CARDS.map((f) => (
-                <article
-                  key={f.title}
-                  className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-300 hover:border-gray-200 hover:shadow-lg"
-                >
-                  <div className="relative aspect-[5/3] w-full overflow-hidden bg-gray-100">
-                    <Image
-                      src={f.image}
-                      alt={f.alt}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-                    />
-                    <div
-                      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent"
-                      aria-hidden
-                    />
-                    <h3 className="absolute bottom-3 left-3 right-3 text-base font-bold leading-snug text-white drop-shadow-sm">
-                      {f.title}
-                    </h3>
-                  </div>
-                  <div className="flex flex-1 flex-col p-5 pt-4">
-                    <p className="text-sm leading-relaxed text-gray-500">{f.desc}</p>
-                  </div>
-                </article>
-              ))}
             </div>
           </div>
         </section>
