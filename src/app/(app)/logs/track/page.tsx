@@ -29,6 +29,8 @@ function AddressInput({
   placeholder?: string;
   icon?: string;
 }) {
+  const [query, setQuery] = useState("");          // 현재 검색어 (포커스 중)
+  const [searching, setSearching] = useState(false); // 입력 중 여부
   const [results, setResults] = useState<NominatimResult[]>([]);
   const [open, setOpen] = useState(false);
   const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
@@ -37,24 +39,32 @@ function AddressInput({
   const listRef = useRef<HTMLUListElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  // 외부 클릭 시 닫기 — 드롭다운 자체 클릭은 제외
+  // 외부 클릭 시 검색 취소 → 기존 값 복원
   useEffect(() => {
     function onDown(e: MouseEvent) {
       const t = e.target as Node;
       if (wrapRef.current?.contains(t) || listRef.current?.contains(t)) return;
       setOpen(false);
+      setSearching(false);
     }
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
   }, []);
 
+  // 포커스: 검색어 초기화 → 기존 GPS/선택값은 placeholder 로 힌트만
+  function handleFocus() {
+    setSearching(true);
+    setQuery("");
+    setResults([]);
+    setOpen(false);
+  }
+
   function handleChange(val: string) {
-    onChange(val);
+    setQuery(val);
     clearTimeout(timer.current);
     if (val.trim().length < 2) { setResults([]); setOpen(false); return; }
     timer.current = setTimeout(async () => {
       try {
-        // 드롭다운 위치를 뷰포트 기준으로 계산 (overflow:hidden 부모 우회)
         if (inputRef.current) {
           const r = inputRef.current.getBoundingClientRect();
           setRect({ top: r.bottom + 4, left: r.left, width: r.width });
@@ -70,33 +80,54 @@ function AddressInput({
   function select(r: NominatimResult) {
     const addr = r.name || r.display_name.split(",")[0].trim();
     onChange(addr);
+    setQuery(addr);
+    setSearching(false);
     setResults([]);
     setOpen(false);
   }
+
+  function clearValue() {
+    onChange("");
+    setQuery("");
+    setSearching(false);
+    setResults([]);
+    setOpen(false);
+  }
+
+  // 표시값: 검색 중이면 query, 아니면 확정된 value
+  const displayValue = searching ? query : value;
+  // placeholder: 검색 중이면 현재값(힌트)을, 아니면 기본 안내문
+  const displayPlaceholder = searching && value ? value : (placeholder ?? "장소명 입력 (예: 강남역)");
 
   return (
     <div ref={wrapRef}>
       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{label}</p>
       <div className="relative">
         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none">
-          {icon ?? "search"}
+          {searching ? "search" : (icon ?? "search")}
         </span>
         <input
           ref={inputRef}
-          value={value}
+          value={displayValue}
+          onFocus={handleFocus}
           onChange={(e) => handleChange(e.target.value)}
-          placeholder={placeholder ?? "장소명 또는 주소 입력"}
+          placeholder={displayPlaceholder}
           className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-10 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#CAFF33]"
         />
-        {value && (
-          <button type="button" onClick={() => { onChange(""); setResults([]); setOpen(false); }}
+        {value && !searching && (
+          <button type="button" onMouseDown={(e) => { e.preventDefault(); clearValue(); }}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
             <span className="material-symbols-outlined text-base">close</span>
           </button>
         )}
+        {searching && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+            <span className="material-symbols-outlined text-base text-gray-300">search</span>
+          </span>
+        )}
       </div>
 
-      {/* position:fixed 로 렌더링 → 부모 overflow:hidden 에 클리핑되지 않음 */}
+      {/* position:fixed → 부모 overflow:hidden 클리핑 우회 */}
       {open && results.length > 0 && rect && (
         <ul
           ref={listRef}
