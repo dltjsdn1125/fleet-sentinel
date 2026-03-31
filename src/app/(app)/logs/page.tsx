@@ -428,7 +428,7 @@ export default function LogsPage() {
 
           {/* 하단 운행 정보 */}
           <div className="bg-white border-t border-gray-200 px-5 py-5 shrink-0">
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
                 {
                   label: "출발",

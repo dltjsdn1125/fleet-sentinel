@@ -270,71 +270,124 @@ export default function ExpensesPage() {
         </div>
 
         {/* 경비 목록 */}
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden overflow-x-auto">
-          <table className="w-full text-left min-w-[700px]">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                {["날짜", "분류", "차량", "가맹점", "금액", "카드", "영수증", "등록자", ""].map((h, i) => (
-                  <th key={i} className={`px-5 py-4 text-xs font-black text-gray-400 uppercase tracking-widest ${i === 8 ? "text-right" : ""}`}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {loading && (
-                <tr><td colSpan={9} className="py-16 text-center text-sm text-gray-400">불러오는 중...</td></tr>
-              )}
-              {!loading && expenses.length === 0 && (
-                <tr>
-                  <td colSpan={9} className="py-16 text-center">
-                    <span className="material-symbols-outlined text-4xl text-gray-200 block mb-2">receipt_long</span>
-                    <p className="text-sm text-gray-400">등록된 경비가 없습니다.</p>
-                  </td>
-                </tr>
-              )}
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          {/* 모바일: 카드 목록 */}
+          <div className="sm:hidden">
+            {loading && <div className="py-16 text-center text-sm text-gray-400">불러오는 중...</div>}
+            {!loading && expenses.length === 0 && (
+              <div className="py-16 text-center">
+                <span className="material-symbols-outlined text-4xl text-gray-200 block mb-2">receipt_long</span>
+                <p className="text-sm text-gray-400">등록된 경비가 없습니다.</p>
+              </div>
+            )}
+            <div className="divide-y divide-gray-100">
               {expenses.map((e) => {
                 const cat = CAT_MAP[e.category];
                 return (
-                  <tr key={e.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-5 py-4 text-sm font-bold text-gray-700 whitespace-nowrap">
-                      {new Date(e.date).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full ${cat?.color ?? "bg-gray-100 text-gray-600"}`}>
-                        <span className="material-symbols-outlined text-xs">{cat?.icon ?? "receipt"}</span>
-                        {cat?.label ?? e.category}
+                  <div key={e.id} className="px-4 py-4 flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <span className={`material-symbols-outlined text-xl p-2 rounded-lg shrink-0 ${cat?.color ?? "bg-gray-100 text-gray-600"}`}>
+                        {cat?.icon ?? "receipt"}
                       </span>
-                    </td>
-                    <td className="px-5 py-4 text-sm font-semibold">{e.vehicle.licensePlate}</td>
-                    <td className="px-5 py-4 text-sm text-gray-600">{e.vendor ?? "—"}</td>
-                    <td className="px-5 py-4 text-sm font-black">{e.amount.toLocaleString()}원</td>
-                    <td className="px-5 py-4 text-sm text-gray-500">
-                      {e.cardLast4 ? `****${e.cardLast4}` : "—"}
-                    </td>
-                    <td className="px-5 py-4">
-                      {e.receiptImagePath ? (
-                        <button
-                          onClick={() => setViewReceiptUrl(e.receiptImagePath)}
-                          className="w-10 h-10 rounded-lg overflow-hidden border border-gray-200 hover:border-[#CAFF33] transition-colors flex-shrink-0 relative"
-                          title="영수증 보기"
-                        >
-                          <img src={e.receiptImagePath} alt="영수증" className="w-full h-full object-cover" />
-                        </button>
-                      ) : (
-                        <span className="text-gray-300 text-xs">없음</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-4 text-sm text-gray-600">{e.driver.name}</td>
-                    <td className="px-5 py-4 text-right">
-                      <button onClick={() => deleteExpense(e.id)}
-                        className="material-symbols-outlined text-gray-300 hover:text-red-500 text-base transition-colors">
-                        delete
-                      </button>
-                    </td>
-                  </tr>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                          <span className="text-sm font-black">{e.amount.toLocaleString()}원</span>
+                          <span className="text-xs text-gray-400">{cat?.label ?? e.category}</span>
+                        </div>
+                        <p className="text-xs text-gray-600 truncate">{e.vendor ?? "—"} · {e.vehicle.licensePlate}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {new Date(e.date).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}
+                          {" · "}{e.driver.name}
+                          {e.cardLast4 ? ` · ****${e.cardLast4}` : ""}
+                        </p>
+                        {e.receiptImagePath && (
+                          <button
+                            onClick={() => setViewReceiptUrl(e.receiptImagePath)}
+                            className="mt-1.5 text-xs font-bold text-gray-400 hover:text-black flex items-center gap-1"
+                          >
+                            <span className="material-symbols-outlined text-xs">receipt</span>
+                            영수증 보기
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <button onClick={() => deleteExpense(e.id)}
+                      className="material-symbols-outlined text-gray-300 hover:text-red-500 text-base transition-colors shrink-0">
+                      delete
+                    </button>
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
+            </div>
+          </div>
+
+          {/* 데스크탑: 테이블 */}
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="w-full text-left min-w-[700px]">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  {["날짜", "분류", "차량", "가맹점", "금액", "카드", "영수증", "등록자", ""].map((h, i) => (
+                    <th key={i} className={`px-5 py-4 text-xs font-black text-gray-400 uppercase tracking-widest ${i === 8 ? "text-right" : ""}`}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {loading && (
+                  <tr><td colSpan={9} className="py-16 text-center text-sm text-gray-400">불러오는 중...</td></tr>
+                )}
+                {!loading && expenses.length === 0 && (
+                  <tr>
+                    <td colSpan={9} className="py-16 text-center">
+                      <span className="material-symbols-outlined text-4xl text-gray-200 block mb-2">receipt_long</span>
+                      <p className="text-sm text-gray-400">등록된 경비가 없습니다.</p>
+                    </td>
+                  </tr>
+                )}
+                {expenses.map((e) => {
+                  const cat = CAT_MAP[e.category];
+                  return (
+                    <tr key={e.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-5 py-4 text-sm font-bold text-gray-700 whitespace-nowrap">
+                        {new Date(e.date).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full ${cat?.color ?? "bg-gray-100 text-gray-600"}`}>
+                          <span className="material-symbols-outlined text-xs">{cat?.icon ?? "receipt"}</span>
+                          {cat?.label ?? e.category}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-sm font-semibold">{e.vehicle.licensePlate}</td>
+                      <td className="px-5 py-4 text-sm text-gray-600">{e.vendor ?? "—"}</td>
+                      <td className="px-5 py-4 text-sm font-black">{e.amount.toLocaleString()}원</td>
+                      <td className="px-5 py-4 text-sm text-gray-500">
+                        {e.cardLast4 ? `****${e.cardLast4}` : "—"}
+                      </td>
+                      <td className="px-5 py-4">
+                        {e.receiptImagePath ? (
+                          <button
+                            onClick={() => setViewReceiptUrl(e.receiptImagePath)}
+                            className="w-10 h-10 rounded-lg overflow-hidden border border-gray-200 hover:border-[#CAFF33] transition-colors flex-shrink-0 relative"
+                            title="영수증 보기"
+                          >
+                            <img src={e.receiptImagePath} alt="영수증" className="w-full h-full object-cover" />
+                          </button>
+                        ) : (
+                          <span className="text-gray-300 text-xs">없음</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-4 text-sm text-gray-600">{e.driver.name}</td>
+                      <td className="px-5 py-4 text-right">
+                        <button onClick={() => deleteExpense(e.id)}
+                          className="material-symbols-outlined text-gray-300 hover:text-red-500 text-base transition-colors">
+                          delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 

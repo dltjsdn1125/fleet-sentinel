@@ -164,7 +164,43 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* 모바일: 카드 목록 */}
+        <div className="sm:hidden divide-y divide-gray-100">
+          {data.recentTrips.length === 0 && (
+            <div className="px-4 py-12 text-center text-gray-400 text-sm">
+              운행 기록이 없습니다.{" "}
+              <Link href="/logs/track" className="text-black font-bold underline">운행 시작하기</Link>
+            </div>
+          )}
+          {data.recentTrips.map((trip) => {
+            const status = STATUS_LABEL[trip.status] ?? STATUS_LABEL.PENDING;
+            return (
+              <div key={trip.id} className="px-4 py-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-sm font-bold truncate">{trip.vehicle.make} {trip.vehicle.model}</span>
+                    <span className="text-xs text-gray-400 shrink-0">{trip.vehicle.licensePlate}</span>
+                  </div>
+                  <span className={`px-2.5 py-1 text-xs font-medium rounded-full shrink-0 ml-2 ${status.className}`}>{status.label}</span>
+                </div>
+                <p className="text-xs text-gray-500 mb-2">{trip.driver.name}</p>
+                <div className="flex items-center gap-1 text-xs text-gray-600 mb-2">
+                  <span className="truncate">{trip.startAddress}</span>
+                  <span className="shrink-0 mx-1">→</span>
+                  <span className="truncate">{trip.endAddress ?? "—"}</span>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-gray-400">
+                  <span>{trip.distanceKm.toFixed(1)} km</span>
+                  <span>·</span>
+                  <span className="truncate">{trip.purpose ?? (trip.purposeCode ? trip.purposeCode.replace(/_/g, " ") : "목적 미입력")}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 데스크탑: 테이블 */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">

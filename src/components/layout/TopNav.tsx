@@ -94,16 +94,12 @@ export function TopNav() {
                 : "Employee"}
             </p>
           </div>
-          {session?.user?.image ? (
+          {session?.user?.image && (
             <img
               src={session.user.image}
               alt="프로필"
               className="w-9 h-9 rounded-lg border border-gray-200 object-cover"
             />
-          ) : (
-            <div className="w-9 h-9 rounded-lg border border-gray-200 bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
-              {(session?.user?.name ?? "U").charAt(0).toUpperCase()}
-            </div>
           )}
         </div>
       </div>

@@ -18,7 +18,7 @@ const BOTTOM_ITEMS = [
   { href: "/logs/track",      icon: "add_circle",  label: "New Trip"  },
   { href: "/billing",         icon: "credit_card", label: "Billing"   },
   { href: "/support",         icon: "help",        label: "Support"   },
-  { href: "/api/auth/signout",icon: "logout",      label: "Sign Out"  },
+  { href: "/signout",         icon: "logout",      label: "Sign Out"  },
 ];
 
 const navLink = (active: boolean) =>
