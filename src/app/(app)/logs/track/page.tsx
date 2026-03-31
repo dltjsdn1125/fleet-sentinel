@@ -48,9 +48,7 @@ function AddressInput({
     if (val.trim().length < 2) { setResults([]); setOpen(false); return; }
     timer.current = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&countrycodes=kr&format=json&limit=6&accept-language=ko`
-        );
+        const res = await fetch(`/api/geocode?q=${encodeURIComponent(val)}`);
         const data: NominatimResult[] = await res.json();
         setResults(data);
         setOpen(data.length > 0);
