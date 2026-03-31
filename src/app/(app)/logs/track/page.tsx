@@ -31,7 +31,7 @@ function AddressInput({
 }) {
   const [results, setResults] = useState<NominatimResult[]>([]);
   const [open, setOpen] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
