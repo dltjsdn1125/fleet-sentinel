@@ -1,11 +1,109 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useTripTracking } from "@/hooks/useGpsTracker";
 
 const LiveTrackMap = dynamic(() => import("@/components/LiveTrackMap"), { ssr: false });
+
+// ── 주소 자동완성 컴포넌트 ──────────────────────────────────────
+interface NominatimResult {
+  place_id: number;
+  display_name: string;
+  name: string;
+  lat: string;
+  lon: string;
+}
+
+function AddressInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+  icon,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  icon?: string;
+}) {
+  const [results, setResults] = useState<NominatimResult[]>([]);
+  const [open, setOpen] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
+  function handleChange(val: string) {
+    onChange(val);
+    clearTimeout(timer.current);
+    if (val.trim().length < 2) { setResults([]); setOpen(false); return; }
+    timer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&countrycodes=kr&format=json&limit=6&accept-language=ko`
+        );
+        const data: NominatimResult[] = await res.json();
+        setResults(data);
+        setOpen(data.length > 0);
+      } catch { /* 무시 */ }
+    }, 350);
+  }
+
+  function select(r: NominatimResult) {
+    const addr = r.name || r.display_name.split(",")[0].trim();
+    onChange(addr);
+    setResults([]);
+    setOpen(false);
+  }
+
+  return (
+    <div ref={wrapRef} className="relative">
+      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{label}</p>
+      <div className="relative">
+        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none">
+          {icon ?? "search"}
+        </span>
+        <input
+          value={value}
+          onChange={(e) => handleChange(e.target.value)}
+          placeholder={placeholder ?? "장소명 또는 주소 입력"}
+          className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#CAFF33]"
+        />
+        {value && (
+          <button type="button" onClick={() => { onChange(""); setResults([]); setOpen(false); }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
+            <span className="material-symbols-outlined text-base">close</span>
+          </button>
+        )}
+      </div>
+      {open && results.length > 0 && (
+        <ul className="absolute z-[60] w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden max-h-52 overflow-y-auto">
+          {results.map((r) => (
+            <li key={r.place_id}>
+              <button type="button" onClick={() => select(r)}
+                className="w-full text-left px-4 py-2.5 hover:bg-gray-50 border-b border-gray-100 last:border-0">
+                <p className="text-sm font-bold text-[#0a0a0a] truncate">
+                  {r.name || r.display_name.split(",")[0].trim()}
+                </p>
+                <p className="text-[11px] text-gray-400 truncate mt-0.5">{r.display_name}</p>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+// ────────────────────────────────────────────────────────────────
 
 const PURPOSE_OPTIONS = [
   { value: "CLIENT_VISIT", label: "고객사 방문", icon: "handshake" },
@@ -47,6 +145,8 @@ export default function TrackPage() {
   const [vehicles, setVehicles] = useState<
     { id: string; licensePlate: string; make: string; model: string }[]
   >([]);
+  const [manualStart, setManualStart] = useState("");
+  const [destination, setDestination] = useState("");
 
   useEffect(() => {
     fetch("/api/vehicles?status=active")
@@ -58,11 +158,18 @@ export default function TrackPage() {
       });
   }, [setSelectedVehicle]);
 
+  // GPS 주소가 확인되면 출발지 입력란에 자동 채움 (이미 입력된 경우 덮어쓰지 않음)
+  useEffect(() => {
+    if (previewAddress && previewAddress !== "위치 확인 중..." && !manualStart) {
+      setManualStart(previewAddress);
+    }
+  }, [previewAddress]);
+
   async function handleConfirmStart() {
     if (!selectedVehicle || !purposeCode) return;
     await confirmStartTrip({
       vehicleId: selectedVehicle,
-      previewAddress,
+      previewAddress: manualStart || previewAddress,
       previewCoords,
     });
   }
@@ -92,32 +199,28 @@ export default function TrackPage() {
 
             <div className="px-6 py-5 space-y-5">
               <div>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">현재 위치 (출발지)</p>
-                <div className={`flex items-start gap-3 p-4 rounded-xl border ${
-                  previewAddress === "위치 확인 중..."
-                    ? "bg-gray-50 border-gray-200"
-                    : previewAddress.includes("없습니다")
-                      ? "bg-red-50 border-red-200"
-                      : "bg-[#CAFF33]/10 border-[#CAFF33]/40"
-                }`}>
-                  <span className={`material-symbols-outlined text-xl mt-0.5 ${
-                    previewAddress === "위치 확인 중..."
-                      ? "animate-spin text-gray-300"
-                      : previewAddress.includes("없습니다")
-                        ? "text-red-400"
-                        : "text-[#0a0a0a]"
-                  }`}>
-                    {previewAddress === "위치 확인 중..." ? "progress_activity" : previewAddress.includes("없습니다") ? "gps_off" : "location_on"}
-                  </span>
-                  <div>
-                    <p className="text-sm font-bold text-[#0a0a0a] leading-snug">{previewAddress}</p>
-                    {previewCoords && (
-                      <p className="text-[10px] text-gray-400 mt-0.5 font-mono">
-                        {previewCoords.lat.toFixed(5)}, {previewCoords.lng.toFixed(5)}
-                      </p>
-                    )}
-                  </div>
-                </div>
+                <AddressInput
+                  label="출발지 *"
+                  value={manualStart}
+                  onChange={setManualStart}
+                  placeholder="출발 장소명 입력 (예: 강남역)"
+                  icon="trip_origin"
+                />
+                {previewAddress === "위치 확인 중..." && (
+                  <p className="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-xs animate-spin">progress_activity</span>
+                    GPS 위치 확인 중...
+                  </p>
+                )}
+              </div>
+              <div>
+                <AddressInput
+                  label="도착지 (선택)"
+                  value={destination}
+                  onChange={setDestination}
+                  placeholder="도착 장소명 입력 (예: 서울시청)"
+                  icon="location_on"
+                />
               </div>
 
               <div>
@@ -187,12 +290,18 @@ export default function TrackPage() {
             height="100%"
           />
 
-          {/* GPS 상태 뱃지 */}
-          <div className="absolute top-3 left-3 z-10 pointer-events-none">
+          {/* GPS 상태 뱃지 + 도착지 */}
+          <div className="absolute top-3 left-3 right-3 z-10 flex items-start justify-between gap-2 pointer-events-none">
             <div className="bg-[#0a0a0a]/85 text-white rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-lg">
               <div className="w-2 h-2 rounded-full bg-[#CAFF33] animate-pulse" />
               <span className="text-[10px] font-black uppercase tracking-widest">GPS 추적 중</span>
             </div>
+            {destination && (
+              <div className="bg-white/95 text-[#0a0a0a] rounded-lg px-3 py-1.5 flex items-center gap-1.5 shadow-lg border border-gray-200 max-w-[55%]">
+                <span className="material-symbols-outlined text-sm text-gray-400 shrink-0">location_on</span>
+                <span className="text-xs font-bold truncate">{destination}</span>
+              </div>
+            )}
           </div>
 
           {/* 하단 고정 바 */}
@@ -281,10 +390,16 @@ export default function TrackPage() {
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">경과 시간</p>
                     <p className="text-lg font-black font-mono mt-0.5">{fmt(elapsed)}</p>
                   </div>
-                  {startAddress && (
+                  {(manualStart || startAddress) && (
                     <div className="col-span-2">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">출발지</p>
-                      <p className="text-sm mt-0.5 truncate">{startAddress}</p>
+                      <p className="text-sm mt-0.5 truncate">{manualStart || startAddress}</p>
+                    </div>
+                  )}
+                  {destination && (
+                    <div className="col-span-2">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">도착지</p>
+                      <p className="text-sm mt-0.5 truncate">{destination}</p>
                     </div>
                   )}
                   {purposeCode && (
