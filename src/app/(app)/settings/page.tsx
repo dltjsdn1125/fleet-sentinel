@@ -1,7 +1,7 @@
 export default function SettingsPage() {
   return (
-    <div className="px-12 py-10">
-      <h1 className="text-4xl font-extrabold tracking-tight mb-2">설정</h1>
+    <div className="px-4 sm:px-8 md:px-12 py-6 md:py-10 overflow-y-auto h-full">
+      <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-2">설정</h1>
       <p className="text-gray-500 mb-10">계정 및 회사 설정</p>
 
       <div className="max-w-2xl space-y-8">

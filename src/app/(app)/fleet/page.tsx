@@ -100,10 +100,10 @@ export default function FleetPage() {
   };
 
   return (
-    <div className="px-12 py-10">
+    <div className="px-4 sm:px-8 md:px-12 py-6 md:py-10 overflow-y-auto h-full">
       {/* 헤더 */}
-      <header className="mb-10">
-        <h1 className="text-4xl font-extrabold tracking-tight">차량 & 직원</h1>
+      <header className="mb-6 md:mb-10">
+        <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">차량 & 직원</h1>
         <p className="text-gray-500 mt-2 max-w-2xl font-medium">
           차량 등록·배정 및 직원 계정 관리. 법인 차량 운행 규정 준수를 위한 중앙 관리.
         </p>
@@ -129,7 +129,7 @@ export default function FleetPage() {
       {tab === "vehicles" && (
         <>
           {/* 통계 */}
-          <div className="grid grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
             {[
               { label: "총 차량", value: stats.total, icon: "local_shipping" },
               { label: "운행 가능", value: stats.active, sub: "현재 활성" },
@@ -159,7 +159,7 @@ export default function FleetPage() {
               )}
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
                     {["차량 ID", "모델", "차량번호", "배정 직원", "누적 거리", "상태", ""].map((h, i) => (

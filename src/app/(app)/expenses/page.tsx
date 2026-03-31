@@ -200,29 +200,29 @@ export default function ExpensesPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="px-8 py-8">
+      <div className="px-4 sm:px-8 py-6 sm:py-8">
         {/* 헤더 */}
-        <div className="flex justify-between items-end mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6 sm:mb-8">
           <div>
             <nav className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">
               <span>FleetSentinel</span>
               <span className="material-symbols-outlined text-xs">chevron_right</span>
               <span className="text-[#0a0a0a]">경비관리</span>
             </nav>
-            <h1 className="text-4xl font-black tracking-tight">경비관리</h1>
+            <h1 className="text-2xl sm:text-4xl font-black tracking-tight">경비관리</h1>
             <p className="text-gray-500 mt-1.5 text-sm">주유·정비·카드 사용 내역 및 영수증 증빙 관리</p>
           </div>
-          <div className="text-right">
+          <div className="sm:text-right">
             <span className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1">이달 총 경비</span>
-            <div className="flex items-baseline gap-1 justify-end">
-              <span className="text-4xl font-black">{total.toLocaleString()}</span>
+            <div className="flex items-baseline gap-1 sm:justify-end">
+              <span className="text-3xl sm:text-4xl font-black">{total.toLocaleString()}</span>
               <span className="text-base font-bold text-gray-400">원</span>
             </div>
           </div>
         </div>
 
         {/* 카테고리별 요약 */}
-        <div className="grid grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
           {CATEGORIES.filter((c) => summary[c.value]).map((cat) => (
             <button
               key={cat.value}
@@ -270,8 +270,8 @@ export default function ExpensesPage() {
         </div>
 
         {/* 경비 목록 */}
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <table className="w-full text-left">
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden overflow-x-auto">
+          <table className="w-full text-left min-w-[700px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
                 {["날짜", "분류", "차량", "가맹점", "금액", "카드", "영수증", "등록자", ""].map((h, i) => (

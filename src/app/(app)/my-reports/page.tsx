@@ -107,16 +107,16 @@ export default function MyReportsPage() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="px-8 py-8">
+      <div className="px-4 sm:px-8 py-6 sm:py-8">
         {/* 헤더 */}
-        <div className="flex justify-between items-end mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6 sm:mb-8">
           <div>
             <nav className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">
               <span>FleetSentinel</span>
               <span className="material-symbols-outlined text-xs">chevron_right</span>
               <span className="text-[#0a0a0a]">{isAdmin ? "보고서 관리" : "업무 보고"}</span>
             </nav>
-            <h1 className="text-4xl font-black tracking-tight">{isAdmin ? "보고서 관리" : "업무 보고"}</h1>
+            <h1 className="text-2xl sm:text-4xl font-black tracking-tight">{isAdmin ? "보고서 관리" : "업무 보고"}</h1>
             <p className="text-gray-500 mt-1.5 text-sm">
               {isAdmin
                 ? "직원별 일·주·월 업무 보고 내역 확인 및 승인"
@@ -126,7 +126,7 @@ export default function MyReportsPage() {
           {!isAdmin && (
             <button
               onClick={() => setShowForm(true)}
-              className="px-6 py-3 bg-[#CAFF33] text-[#0a0a0a] rounded-lg font-bold flex items-center gap-2 hover:brightness-95"
+              className="self-start sm:self-auto px-5 sm:px-6 py-2.5 sm:py-3 bg-[#CAFF33] text-[#0a0a0a] rounded-lg font-bold flex items-center gap-2 hover:brightness-95 text-sm"
             >
               <span className="material-symbols-outlined text-lg">edit_note</span>
               보고서 제출
@@ -136,7 +136,7 @@ export default function MyReportsPage() {
 
         {/* 통계 요약 (본인) */}
         {!isAdmin && (
-          <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
             {[
               { label: "전체 제출", value: reports.length, icon: "description" },
               { label: "승인 완료", value: reports.filter((r) => r.status === "APPROVED").length, icon: "check_circle" },
@@ -156,8 +156,8 @@ export default function MyReportsPage() {
         )}
 
         {/* 보고서 목록 */}
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <table className="w-full text-left">
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden overflow-x-auto">
+          <table className="w-full text-left min-w-[600px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
                 {(isAdmin

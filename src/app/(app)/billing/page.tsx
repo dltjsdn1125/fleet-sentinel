@@ -29,16 +29,16 @@ export default function BillingPage() {
   const isAdmin = session?.user?.role === "ADMIN" || session?.user?.role === "SUPER_ADMIN";
 
   return (
-    <div className="px-12 py-10 max-w-5xl mx-auto">
+    <div className="px-4 sm:px-8 md:px-12 py-6 md:py-10 max-w-5xl mx-auto">
       {/* 헤더 */}
       <div className="mb-12">
-        <h1 className="text-4xl font-extrabold tracking-tight">구독 관리</h1>
+        <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">구독 관리</h1>
         <p className="text-gray-500 mt-2">FleetSentinel 구독 플랜 및 청구 내역 관리</p>
       </div>
 
       {/* 현재 플랜 상태 */}
-      <div className="bg-white border border-gray-200 rounded-xl p-8 mb-12">
-        <div className="flex items-center justify-between">
+      <div className="bg-white border border-gray-200 rounded-xl p-5 sm:p-8 mb-8 sm:mb-12">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">현재 플랜</p>
             <p className="text-2xl font-extrabold">14일 무료 체험 중</p>
@@ -66,7 +66,7 @@ export default function BillingPage() {
       </div>
 
       {/* 요금제 카드 */}
-      <div className="grid grid-cols-3 gap-6 mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
         {Object.values(PLANS).map((plan) => {
           const price = cycle === "yearly" ? plan.priceYearlyKrw : plan.priceMonthlyKrw;
           const monthlyEquiv = cycle === "yearly" && plan.priceYearlyKrw > 0

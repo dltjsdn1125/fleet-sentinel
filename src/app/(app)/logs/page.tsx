@@ -128,26 +128,26 @@ export default function LogsPage() {
   }
 
   return (
-    <div className="h-full flex overflow-hidden">
+    <div className="h-full flex flex-col md:flex-row overflow-hidden">
       {/* ── 좌측: 목록 패널 ── */}
-      <div className="flex flex-col w-1/2 xl:w-[55%] overflow-hidden border-r border-gray-200">
+      <div className="flex flex-col w-full md:w-1/2 xl:w-[55%] overflow-hidden border-b md:border-b-0 md:border-r border-gray-200 md:h-full" style={{maxHeight: "100%"}}>
         {/* ── 고정 헤더 + 필터 ── */}
-        <div className="shrink-0 px-8 pt-8 pb-5 bg-white border-b border-gray-100">
+        <div className="shrink-0 px-4 sm:px-8 pt-5 sm:pt-8 pb-5 bg-white border-b border-gray-100">
           {/* 헤더 */}
-          <div className="flex justify-between items-end mb-8">
+          <div className="flex justify-between items-end mb-5 sm:mb-8">
             <div>
               <nav className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">
                 <span>FleetSentinel</span>
                 <span className="material-symbols-outlined text-xs">chevron_right</span>
                 <span className="text-[#0a0a0a]">운행일지</span>
               </nav>
-              <h1 className="text-4xl font-black tracking-tight">운행일지</h1>
-              <p className="text-gray-500 mt-1.5 text-sm">GPS 자동 기록 · 클릭하면 지도에서 경로를 확인할 수 있습니다.</p>
+              <h1 className="text-2xl sm:text-4xl font-black tracking-tight">운행일지</h1>
+              <p className="text-gray-500 mt-1.5 text-xs sm:text-sm">GPS 자동 기록 · 클릭하면 지도에서 경로를 확인할 수 있습니다.</p>
             </div>
             <div className="text-right">
               <span className="text-xs font-bold uppercase tracking-widest text-gray-400 block mb-1">이달 주행</span>
               <div className="flex items-baseline gap-1 justify-end">
-                <span className="text-4xl font-black">{monthlyKm.toFixed(1)}</span>
+                <span className="text-3xl sm:text-4xl font-black">{monthlyKm.toFixed(1)}</span>
                 <span className="text-base font-bold text-gray-400">km</span>
               </div>
             </div>
@@ -204,7 +204,7 @@ export default function LogsPage() {
           </div>
         </div>
         {/* ── 스크롤 목록 ── */}
-        <div className="flex-1 overflow-y-auto px-8 py-5">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-5">
           <div className="space-y-2">
             {loading && (
               <div className="py-16 text-center text-gray-400 text-sm">불러오는 중...</div>
@@ -365,7 +365,7 @@ export default function LogsPage() {
       </div>
 
       {/* ── 우측: 지도 패널 ── */}
-      <div className="flex-1 flex flex-col bg-gray-50 overflow-hidden min-w-0">
+      <div className={`flex-col bg-gray-50 overflow-hidden min-w-0 ${selectedTrip ? "flex flex-1" : "hidden md:flex md:flex-1"}`}>
         {!selectedTrip ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-8">
             <div className="w-16 h-16 rounded-2xl bg-white border border-gray-200 flex items-center justify-center shadow-sm">

@@ -76,16 +76,16 @@ export default async function ReportsPage() {
   const fromM = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
 
   return (
-    <div className="px-12 py-10">
+    <div className="px-4 sm:px-8 md:px-12 py-6 md:py-10 overflow-y-auto h-full">
       {/* 헤더 */}
-      <div className="flex justify-between items-end mb-12">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-8 md:mb-12">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight mb-2">준법 보고서</h1>
-          <p className="text-gray-500 max-w-2xl font-medium">
+          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-2">준법 보고서</h1>
+          <p className="text-gray-500 max-w-2xl font-medium text-sm">
             국세청 업무용 차량 운행일지 및 세무 신고용 집계표를 즉시 생성하세요.
           </p>
         </div>
-        <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+        <div className="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200 self-start">
           <span className="material-symbols-outlined text-black">verified</span>
           <span className="text-black font-bold text-sm">
             {now.toLocaleDateString("ko-KR", { year: "numeric", month: "long" })} 데이터 검증됨
@@ -93,7 +93,7 @@ export default async function ReportsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
         {/* 필터 & 다운로드 사이드 */}
         <section className="col-span-12 lg:col-span-4 space-y-6">
           {/* 다운로드 옵션 */}
@@ -173,7 +173,7 @@ export default async function ReportsPage() {
               </div>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse min-w-[560px]">
                 <thead className="bg-gray-50">
                   <tr>
                     {["날짜", "차량번호", "운전자", "출발지", "도착지", "거리", "목적"].map((h) => (

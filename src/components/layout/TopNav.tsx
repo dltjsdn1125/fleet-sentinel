@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTripTrackingOptional } from "@/hooks/useGpsTracker";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 const TAB_ITEMS = [
   { href: "/dashboard", label: "Fleet Overview" },
@@ -15,10 +16,20 @@ export function TopNav() {
   const pathname = usePathname();
   const trip = useTripTrackingOptional();
   const tracking = trip?.stage === "tracking";
+  const { toggle } = useSidebar();
 
   return (
-    <header className="fixed top-0 right-0 left-56 md:left-64 h-16 bg-white z-40 border-b border-gray-200 flex justify-between items-center px-4 md:px-10 font-[Manrope] text-sm">
-      <div className="flex items-center gap-4 md:gap-10 min-w-0 flex-1">
+    <header className="fixed top-0 right-0 left-0 md:left-56 h-16 bg-white z-40 border-b border-gray-200 flex justify-between items-center px-4 md:px-10 font-[Manrope] text-sm">
+      <div className="flex items-center gap-3 md:gap-6 min-w-0 flex-1">
+        {/* 햄버거 버튼 (모바일) */}
+        <button
+          onClick={toggle}
+          className="md:hidden p-2 -ml-2 text-gray-500 hover:text-black shrink-0"
+          aria-label="메뉴 열기"
+        >
+          <span className="material-symbols-outlined text-xl">menu</span>
+        </button>
+
         {tracking && (
           <Link
             href="/logs/track"
@@ -31,11 +42,12 @@ export function TopNav() {
             GPS 추적 중
           </Link>
         )}
-        {/* 검색 */}
-        <div className="relative flex items-center">
+
+        {/* 검색 — sm 이상에서만 표시 */}
+        <div className="relative hidden sm:flex items-center">
           <span className="material-symbols-outlined absolute left-3 text-gray-400 text-lg">search</span>
           <input
-            className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg w-72 focus:outline-none focus:ring-1 focus:ring-black text-sm"
+            className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg w-56 md:w-72 focus:outline-none focus:ring-1 focus:ring-black text-sm"
             placeholder="차량번호, 운전자, 목적지 검색..."
             type="text"
           />
@@ -63,8 +75,8 @@ export function TopNav() {
       </div>
 
       {/* 우측 - 사용자 정보 */}
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-2 pr-6 border-r border-gray-200">
+      <div className="flex items-center gap-3 md:gap-6 shrink-0">
+        <div className="hidden sm:flex items-center gap-2 pr-3 md:pr-6 border-r border-gray-200">
           <button className="p-2 text-gray-400 hover:text-black relative">
             <span className="material-symbols-outlined">notifications</span>
           </button>
@@ -73,8 +85,8 @@ export function TopNav() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="text-right">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="hidden sm:block text-right">
             <p className="text-xs font-extrabold text-black">{session?.user?.name ?? "사용자"}</p>
             <p className="text-[10px] uppercase font-bold text-gray-400">
               {session?.user?.role === "ADMIN" || session?.user?.role === "SUPER_ADMIN"

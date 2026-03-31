@@ -122,27 +122,28 @@ export default async function DashboardPage() {
       </div>
 
       {/* ── 메인 콘텐츠 ── */}
-      <div className="flex-1 overflow-y-auto px-12 py-10">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-8 md:px-12 py-6 md:py-10">
       {/* 헤더 */}
-      <div className="flex justify-between items-end mb-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-6 md:mb-8">
         <div>
-          <h2 className="text-4xl font-black tracking-tight text-black">Fleet Intelligence</h2>
-          <p className="text-gray-500 mt-2 font-medium">
+          <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-black">Fleet Intelligence</h2>
+          <p className="text-gray-500 mt-2 font-medium text-sm">
             실시간 운행 현황 및 법인 차량 운행일지 관리
           </p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-2 sm:gap-4">
           <Link
             href={excelExportHref}
-            className="px-6 py-3 bg-white text-black border border-gray-200 rounded-lg font-bold flex items-center gap-2 hover:bg-gray-50 transition-colors"
+            className="flex-1 sm:flex-none px-3 sm:px-6 py-2.5 sm:py-3 bg-white text-black border border-gray-200 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors text-sm"
           >
             <span className="material-symbols-outlined text-lg">download</span>
-            엑셀 내보내기
+            <span className="hidden sm:inline">엑셀 내보내기</span>
+            <span className="sm:hidden">내보내기</span>
           </Link>
           {isAdmin && (
             <Link
               href="/fleet"
-              className="px-6 py-3 bg-[#CAFF33] text-[#0a0a0a] rounded-lg font-bold flex items-center gap-2 hover:brightness-95 transition-colors"
+              className="flex-1 sm:flex-none px-3 sm:px-6 py-2.5 sm:py-3 bg-[#CAFF33] text-[#0a0a0a] rounded-lg font-bold flex items-center justify-center gap-2 hover:brightness-95 transition-colors text-sm"
             >
               <span className="material-symbols-outlined text-lg">add_circle</span>
               차량 등록
@@ -153,8 +154,8 @@ export default async function DashboardPage() {
 
       {/* 최근 운행 기록 */}
       <section className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="px-10 py-6 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
-          <h3 className="text-2xl font-black text-black">최근 운행 기록</h3>
+        <div className="px-4 sm:px-10 py-4 sm:py-6 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
+          <h3 className="text-lg sm:text-2xl font-black text-black">최근 운행 기록</h3>
           <Link
             href="/logs"
             className="text-sm font-black text-black uppercase tracking-widest border-b border-black hover:opacity-70"
