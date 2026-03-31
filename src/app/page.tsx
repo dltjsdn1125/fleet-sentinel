@@ -156,7 +156,7 @@ export default function LandingPage() {
       <main>
         {/* ── 히어로 섹션 ── */}
         <section className="min-h-[88vh] flex flex-col items-center justify-center px-4 py-20 text-center bg-white">
-          <div className="max-w-5xl mx-auto">
+          <div className="w-full max-w-5xl mx-auto">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-gray-50 border border-gray-100 rounded-full text-xs font-semibold text-gray-500 mb-8">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-lime"></span>
               GPS 실시간 추적 · 국세청 준수
